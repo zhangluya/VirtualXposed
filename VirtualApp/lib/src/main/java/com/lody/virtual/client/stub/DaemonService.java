@@ -21,7 +21,7 @@ public class DaemonService extends Service {
 
     private static final int NOTIFY_ID = 1001;
 
-	static boolean showNotification = true;
+	static boolean showNotification = false;
 
 	public static void startup(Context context) {
 		File flagFile = context.getFileStreamPath(Constants.NO_NOTIFICATION_FLAG);
