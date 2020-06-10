@@ -90,7 +90,7 @@ public class VActivityManagerService extends IActivityManager.Stub {
     private NotificationManager nm = (NotificationManager) VirtualCore.get().getContext()
             .getSystemService(Context.NOTIFICATION_SERVICE);
 
-    private int mCurrentPid;
+    private final ArrayMap<String, Integer> mProcessIds = new ArrayMap<>();
 
     public static VActivityManagerService get() {
         return sService.get();
@@ -812,7 +812,6 @@ public class VActivityManagerService extends IActivityManager.Stub {
     }
 
     private ProcessRecord performStartProcessLocked(int vuid, int vpid, ApplicationInfo info, String processName) {
-        mCurrentPid = vpid;
         ProcessRecord app = new ProcessRecord(info, processName, vuid, vpid);
         Bundle extras = new Bundle();
         BundleCompat.putBinder(extras, "_VA_|_binder_", app);
@@ -820,6 +819,7 @@ public class VActivityManagerService extends IActivityManager.Stub {
         extras.putString("_VA_|_process_", processName);
         extras.putString("_VA_|_pkg_", info.packageName);
         Bundle res = ProviderCall.call(VASettings.getStubAuthority(vpid), "_VA_|_init_process_", null, extras);
+        mProcessIds.put(processName, vpid);
         if (res == null) {
             return null;
         }
@@ -983,10 +983,8 @@ public class VActivityManagerService extends IActivityManager.Stub {
     }
 
     @Override
-    public String findProcessPid(String processName, int vuid) throws RemoteException {
-        //ProcessRecord record = mProcessNames.get(processName, vuid);
-        //return record != null ? String.valueOf(record.pid) : null;
-        return String.valueOf(mCurrentPid);
+    public int getVAppPidByPkgName(String pkgName) throws RemoteException {
+        return mProcessIds.get(pkgName);
     }
 
     /**

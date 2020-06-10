@@ -16,4 +16,8 @@ interface IVClient {
     IBinder getAppThread();
     IBinder getToken();
     String getDebugInfo();
+
+    boolean dispatchVAppTouchEvent(in Intent intent);
+
+    void hackView();
 }

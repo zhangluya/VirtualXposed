@@ -502,12 +502,12 @@ public class VActivityManager {
         }
     }
 
-    public String getProcessPid(String processName, int vuid) {
+    public int getVAppPid(String pkgName) {
         try {
-            return getService().findProcessPid(processName, vuid);
+            return getService().getVAppPidByPkgName(pkgName);
         } catch (RemoteException e) {
             VirtualRuntime.crash(e);
         }
-        return null;
+        return -1;
     }
 }

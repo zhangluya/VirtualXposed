@@ -114,5 +114,5 @@ interface IActivityManager {
 
     void notifyBadgerChange(in BadgerInfo info);
 
-    String findProcessPid(in String pkgName, int vuid);
+    int getVAppPidByPkgName(in String pkgName);
 }

@@ -1,6 +1,7 @@
 package com.lody.virtual.client;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.BroadcastReceiver;
@@ -24,8 +25,14 @@ import android.os.Message;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.system.ErrnoException;
 import android.system.Os;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.lody.virtual.client.core.CrashHandler;
 import com.lody.virtual.client.core.InvocationStubManager;
@@ -34,6 +41,7 @@ import com.lody.virtual.client.env.SpecialComponentList;
 import com.lody.virtual.client.env.VirtualRuntime;
 import com.lody.virtual.client.fixer.ContextFixer;
 import com.lody.virtual.client.hook.delegate.AppInstrumentation;
+import com.lody.virtual.client.hook.delegate.ComponentDelegate;
 import com.lody.virtual.client.hook.providers.ProviderHook;
 import com.lody.virtual.client.hook.proxies.am.HCallbackStub;
 import com.lody.virtual.client.hook.secondary.ProxyServiceFactory;
@@ -735,6 +743,47 @@ public final class VClientImpl extends IVClient.Stub {
         return "process : " + VirtualRuntime.getProcessName() + "\n" +
                 "initialPkg : " + VirtualRuntime.getInitialPackageName() + "\n" +
                 "vuid : " + vuid;
+    }
+
+    @Override
+    public boolean dispatchVAppTouchEvent(Intent intent) throws RemoteException {
+        final float x = intent.getFloatExtra("x", 0);
+        final float y = intent.getFloatExtra("y", 0);
+        ComponentDelegate delegate = VirtualCore.get().getComponentDelegate();
+        final Activity activity = delegate.getCurrentActivity();
+        if (activity == null) {
+            throw new RuntimeException(String.format("The %s getCurrentActivity method cannot return null", delegate.getClass().getName()));
+        }
+        MotionEvent down = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0);
+        activity.dispatchTouchEvent(down);
+        mH.post(new Runnable() {
+            @Override
+            public void run() {
+                MotionEvent up = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0);
+                activity.dispatchTouchEvent(up);
+            }
+        });
+        return true;
+    }
+
+    @Override
+    public void hackView() throws RemoteException {
+        ComponentDelegate delegate = VirtualCore.get().getComponentDelegate();
+        final Activity activity = delegate.getCurrentActivity();
+
+
+        mH.post(new Runnable() {
+            @Override
+            public void run() {
+                ViewGroup contentView = activity.findViewById(android.R.id.content);
+                TextView hackView = new TextView(activity);
+                hackView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 150));
+                hackView.setBackgroundColor(activity.getResources().getColor(android.R.color.holo_red_dark));
+                hackView.setText("Hello 酷安");
+                contentView.addView(hackView);
+            }
+        });
+
     }
 
     private static class RootThreadGroup extends ThreadGroup {

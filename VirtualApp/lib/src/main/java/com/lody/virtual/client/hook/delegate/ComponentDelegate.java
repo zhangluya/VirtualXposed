@@ -10,6 +10,14 @@ public interface ComponentDelegate {
 
     ComponentDelegate EMPTY = new ComponentDelegate() {
 
+
+        Activity currentActivity;
+
+        @Override
+        public Activity getCurrentActivity() {
+            return currentActivity;
+        }
+
         @Override
         public void beforeActivityCreate(Activity activity) {
             // Empty
@@ -32,7 +40,7 @@ public interface ComponentDelegate {
 
         @Override
         public void afterActivityCreate(Activity activity) {
-            // Empty
+            currentActivity = activity;
         }
 
         @Override
@@ -87,4 +95,6 @@ public interface ComponentDelegate {
     void afterActivityDestroy(Activity activity);
 
     void onSendBroadcast(Intent intent);
+
+    Activity getCurrentActivity();
 }
