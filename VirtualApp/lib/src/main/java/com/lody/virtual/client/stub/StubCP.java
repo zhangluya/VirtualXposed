@@ -1,17 +1,25 @@
 package com.lody.virtual.client.stub;
 
+import android.app.Activity;
+import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ConditionVariable;
 import android.os.IBinder;
 import android.os.Process;
+import android.util.Log;
 
 import com.lody.virtual.client.VClientImpl;
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.helper.compat.BundleCompat;
+import com.lody.virtual.server.pm.PackageCacheManager;
+import com.lody.virtual.server.pm.parser.VPackage;
 
 /**
  * @author Lody
@@ -28,6 +36,47 @@ public class StubCP extends ContentProvider {
 	public Bundle call(String method, String arg, Bundle extras) {
 		if ("_VA_|_init_process_".equals(method)) {
 			return initProcess(extras);
+		} else if ("click".equals(method)) {
+			double x = extras.getDouble("x");
+			double y = extras.getDouble("y");
+			Log.d("StubCp", "click x " + x + "y " + y);
+			Log.d("StubCP", "Current application is " + VClientImpl.get().getCurrentApplication().getClass().getName());
+			VClientImpl.get().getCurrentApplication().registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+				@Override
+				public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+					Log.d("StubCP#created", activity.getClass().getName());
+				}
+
+				@Override
+				public void onActivityStarted(Activity activity) {
+					Log.d("StubCP#started", activity.getClass().getName());
+				}
+
+				@Override
+				public void onActivityResumed(Activity activity) {
+					Log.d("StubCP#resumed", activity.getClass().getName());
+				}
+
+				@Override
+				public void onActivityPaused(Activity activity) {
+					Log.d("StubCP#paused", activity.getClass().getName());
+				}
+
+				@Override
+				public void onActivityStopped(Activity activity) {
+					Log.d("StubCP#stopped", activity.getClass().getName());
+				}
+
+				@Override
+				public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+					Log.d("StubCP#save", activity.getClass().getName());
+				}
+
+				@Override
+				public void onActivityDestroyed(Activity activity) {
+					Log.d("StubCP#destroyed", activity.getClass().getName());
+				}
+			});
 		}
 		return null;
 	}

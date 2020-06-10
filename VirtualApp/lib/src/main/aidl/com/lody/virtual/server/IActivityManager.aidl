@@ -113,4 +113,6 @@ interface IActivityManager {
     void broadcastFinish(in PendingResultData res);
 
     void notifyBadgerChange(in BadgerInfo info);
+
+    String findProcessPid(in String pkgName, int vuid);
 }

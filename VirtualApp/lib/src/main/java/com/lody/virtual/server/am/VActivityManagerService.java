@@ -90,6 +90,8 @@ public class VActivityManagerService extends IActivityManager.Stub {
     private NotificationManager nm = (NotificationManager) VirtualCore.get().getContext()
             .getSystemService(Context.NOTIFICATION_SERVICE);
 
+    private int mCurrentPid;
+
     public static VActivityManagerService get() {
         return sService.get();
     }
@@ -810,6 +812,7 @@ public class VActivityManagerService extends IActivityManager.Stub {
     }
 
     private ProcessRecord performStartProcessLocked(int vuid, int vpid, ApplicationInfo info, String processName) {
+        mCurrentPid = vpid;
         ProcessRecord app = new ProcessRecord(info, processName, vuid, vpid);
         Bundle extras = new Bundle();
         BundleCompat.putBinder(extras, "_VA_|_binder_", app);
@@ -979,6 +982,12 @@ public class VActivityManagerService extends IActivityManager.Stub {
         }
     }
 
+    @Override
+    public String findProcessPid(String processName, int vuid) throws RemoteException {
+        //ProcessRecord record = mProcessNames.get(processName, vuid);
+        //return record != null ? String.valueOf(record.pid) : null;
+        return String.valueOf(mCurrentPid);
+    }
 
     /**
      * Should guard by {@link VActivityManagerService#mPidsSelfLocked}
