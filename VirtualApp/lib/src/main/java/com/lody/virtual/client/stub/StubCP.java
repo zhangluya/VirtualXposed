@@ -30,21 +30,11 @@ public class StubCP extends ContentProvider {
 	public Bundle call(String method, String arg, Bundle extras) {
 		if ("_VA_|_init_process_".equals(method)) {
 			return initProcess(extras);
-		} else if ("_VA_|_dispatchVAppTouchEvent_".equals(method)) {
-			Intent intent = new Intent();
-			intent.putExtra("x", extras.getFloat("x"));
-			intent.putExtra("y", extras.getFloat("y"));
-			try {
-				VClientImpl.get().dispatchVAppTouchEvent(intent);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		} else if ("_VA_|_hack_view_".equals(method)) {
-			try {
-				VClientImpl.get().hackView();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+		} else if ("_VA_|_get_vclient_impl_".equals(method)) {
+			VClientImpl client = VClientImpl.get();
+			Bundle res = new Bundle();
+			BundleCompat.putBinder(res, "_VA_|_client_", client.asBinder());
+			return res;
 		}
 		return null;
 	}
