@@ -13,6 +13,9 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.media.ImageReader;
 import android.os.Binder;
 import android.os.Build;
 import android.os.ConditionVariable;
@@ -28,10 +31,14 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.system.ErrnoException;
 import android.system.Os;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.PixelCopy;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.lody.virtual.client.core.CrashHandler;
@@ -79,6 +86,7 @@ import mirror.android.providers.Settings;
 import mirror.android.renderscript.RenderScriptCacheDir;
 import mirror.android.view.HardwareRenderer;
 import mirror.android.view.RenderScript;
+import mirror.android.view.SurfaceControl;
 import mirror.android.view.ThreadedRenderer;
 import mirror.com.android.internal.content.ReferrerIntent;
 import mirror.dalvik.system.VMRuntime;
@@ -764,26 +772,6 @@ public final class VClientImpl extends IVClient.Stub {
             }
         });
         return true;
-    }
-
-    @Override
-    public void hackView() throws RemoteException {
-        ComponentDelegate delegate = VirtualCore.get().getComponentDelegate();
-        final Activity activity = delegate.getCurrentActivity();
-
-
-        mH.post(new Runnable() {
-            @Override
-            public void run() {
-                ViewGroup contentView = activity.findViewById(android.R.id.content);
-                TextView hackView = new TextView(activity);
-                hackView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 150));
-                hackView.setBackgroundColor(activity.getResources().getColor(android.R.color.holo_red_dark));
-                hackView.setText("Hello 酷安");
-                contentView.addView(hackView);
-            }
-        });
-
     }
 
     private static class RootThreadGroup extends ThreadGroup {

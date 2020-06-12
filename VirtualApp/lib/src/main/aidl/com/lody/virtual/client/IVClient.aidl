@@ -18,6 +18,4 @@ interface IVClient {
     String getDebugInfo();
 
     boolean dispatchVAppTouchEvent(in Intent intent);
-
-    void hackView();
 }
