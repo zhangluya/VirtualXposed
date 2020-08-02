@@ -754,8 +754,9 @@ public final class VClientImpl extends IVClient.Stub {
                 "vuid : " + vuid;
     }
 
-    private HandlerThread mTouchVAppEventThread = new HandlerThread("_touchVAppEventThread_");
-    private Handler touchVAppEventHandler;
+    private final HandlerThread mTouchVAppEventThread = new HandlerThread("_touchVAppEventThread_");
+    private final Handler touchVAppEventHandler;
+    private final Instrumentation ins = new Instrumentation();
 
     {
         mTouchVAppEventThread.start();
@@ -770,7 +771,6 @@ public final class VClientImpl extends IVClient.Stub {
             @Override
             public void run() {
                 MotionEvent down = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0);
-                final Instrumentation ins = new Instrumentation();
                 ins.sendPointerSync(down);
                 MotionEvent up = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0);
                 ins.sendPointerSync(up);
