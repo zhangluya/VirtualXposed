@@ -33,6 +33,7 @@ import android.os.SystemClock;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PixelCopy;
@@ -767,17 +768,43 @@ public final class VClientImpl extends IVClient.Stub {
     public boolean dispatchVAppTouchEvent(Intent intent) throws RemoteException {
         final float x = intent.getFloatExtra("x", 0);
         final float y = intent.getFloatExtra("y", 0);
+        dispatchEventInActivity(x,y);
+        //有时候会有点击不上的情况
+        //dispatchEventInInstrumentation(x,y);
+        return true;
+    }
+    private void dispatchEventInInstrumentation(final float x, final float y){
         touchVAppEventHandler.post(new Runnable() {
             @Override
             public void run() {
-                MotionEvent down = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0);
+                long time = SystemClock.uptimeMillis();
+                MotionEvent down = MotionEvent.obtain(time, time, MotionEvent.ACTION_DOWN, x, y, 0);
                 ins.sendPointerSync(down);
-                MotionEvent up = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0);
+                MotionEvent up = MotionEvent.obtain(time, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0);
                 ins.sendPointerSync(up);
             }
         });
 
-        return true;
+    }
+    private void dispatchEventInActivity(final float x, final float y){
+        ComponentDelegate delegate = VirtualCore.get().getComponentDelegate();
+        final Activity activity = delegate.getCurrentActivity();
+        if (activity == null) {
+            throw new RuntimeException(String.format("The %s getCurrentActivity method cannot return null", delegate.getClass().getName()));
+        }
+
+        mH.post(new Runnable() {
+            @Override
+            public void run() {
+                long time = SystemClock.uptimeMillis();
+                MotionEvent down = MotionEvent.obtain(time, time, MotionEvent.ACTION_DOWN, x, y, 0);
+                down.setSource(InputDevice.SOURCE_TOUCHSCREEN);
+                activity.dispatchTouchEvent(down);
+                MotionEvent up = MotionEvent.obtain(time, time+100L, MotionEvent.ACTION_UP, x, y, 0);
+                up.setSource(InputDevice.SOURCE_TOUCHSCREEN);
+                activity.dispatchTouchEvent(up);
+            }
+        });
     }
 
     private static class RootThreadGroup extends ThreadGroup {
