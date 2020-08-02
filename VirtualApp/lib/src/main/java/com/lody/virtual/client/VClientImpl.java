@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Looper;
@@ -753,24 +754,29 @@ public final class VClientImpl extends IVClient.Stub {
                 "vuid : " + vuid;
     }
 
+    private HandlerThread mTouchVAppEventThread = new HandlerThread("_touchVAppEventThread_");
+    private Handler touchVAppEventHandler;
+
+    {
+        mTouchVAppEventThread.start();
+        touchVAppEventHandler = new Handler(mTouchVAppEventThread.getLooper());
+    }
+
     @Override
     public boolean dispatchVAppTouchEvent(Intent intent) throws RemoteException {
         final float x = intent.getFloatExtra("x", 0);
         final float y = intent.getFloatExtra("y", 0);
-        ComponentDelegate delegate = VirtualCore.get().getComponentDelegate();
-        final Activity activity = delegate.getCurrentActivity();
-        if (activity == null) {
-            throw new RuntimeException(String.format("The %s getCurrentActivity method cannot return null", delegate.getClass().getName()));
-        }
-        MotionEvent down = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0);
-        activity.dispatchTouchEvent(down);
-        mH.post(new Runnable() {
+        touchVAppEventHandler.post(new Runnable() {
             @Override
             public void run() {
+                MotionEvent down = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0);
+                final Instrumentation ins = new Instrumentation();
+                ins.sendPointerSync(down);
                 MotionEvent up = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, x, y, 0);
-                activity.dispatchTouchEvent(up);
+                ins.sendPointerSync(up);
             }
         });
+
         return true;
     }
 
