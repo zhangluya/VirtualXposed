@@ -344,6 +344,20 @@ public final class VClientImpl extends IVClient.Stub {
             applicationInfo.splitNames = new String[1];
         }
 
+        boolean enableXposed = VirtualCore.get().isXposedEnabled();
+        if (enableXposed) {
+            VLog.i(TAG, "Xposed is enabled.");
+            ClassLoader originClassLoader = context.getClassLoader();
+            ExposedBridge.initOnce(context, data.appInfo, originClassLoader);
+            List<InstalledAppInfo> modules = VirtualCore.get().getInstalledApps(0);
+            for (InstalledAppInfo module : modules) {
+                ExposedBridge.loadModule(module.apkPath, module.getOdexFile().getParent(), module.libPath,
+                        data.appInfo, originClassLoader);
+            }
+        } else {
+            VLog.w(TAG, "Xposed is disable..");
+        }
+
         mInitialApplication = LoadedApk.makeApplication.call(data.info, false, null);
 
         mirror.android.app.ActivityThread.mInitialApplication.set(mainThread, mInitialApplication);
