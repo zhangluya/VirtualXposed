@@ -222,7 +222,11 @@ public class InstrumentationDelegate extends Instrumentation {
 
 	@Override
 	public void callApplicationOnCreate(Application app) {
-		base.callApplicationOnCreate(app);
+		try {
+			base.callApplicationOnCreate(app);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
