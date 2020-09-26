@@ -8,12 +8,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.ConditionVariable;
 import android.os.IBinder;
+import android.os.IInterface;
 import android.os.Process;
 import android.os.RemoteException;
 
 import com.lody.virtual.client.VClientImpl;
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.helper.compat.BundleCompat;
+
+import java.lang.reflect.Field;
 
 /**
  * @author Lody
@@ -35,6 +38,22 @@ public class StubCP extends ContentProvider {
 			Bundle res = new Bundle();
 			BundleCompat.putBinder(res, "_VA_|_client_", client.asBinder());
 			return res;
+		} else if ("_VA_|_get_yikeclient_impl_".equals(method)) {
+			Bundle res = new Bundle();
+			//VClientImpl client = Yike.get();
+			try {
+				Field instance = Class.forName("com.chess.plugins.yike.YikePlugin").getField("INSTANCE");
+				IInterface YikePluginInstance = (IInterface) instance.get(null);
+				BundleCompat.putBinder(res, "_VA_|_yikeclient_", YikePluginInstance.asBinder());
+				return res;
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (NoSuchFieldException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+
 		}
 		return null;
 	}
