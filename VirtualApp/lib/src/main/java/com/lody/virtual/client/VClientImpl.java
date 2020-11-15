@@ -784,9 +784,9 @@ public final class VClientImpl extends IVClient.Stub {
     public boolean dispatchVAppTouchEvent(Intent intent) throws RemoteException {
         final float x = intent.getFloatExtra("x", 0);
         final float y = intent.getFloatExtra("y", 0);
-        dispatchEventInActivity(x,y);
+//        dispatchEventInActivity(x,y);
         //有时候会有点击不上的情况
-        //dispatchEventInInstrumentation(x,y);
+        dispatchEventInInstrumentation(x,y);
         return true;
     }
     private void dispatchEventInInstrumentation(final float x, final float y){
